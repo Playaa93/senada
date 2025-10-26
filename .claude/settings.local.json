@@ -32,7 +32,16 @@
       "Bash(git branch:*)",
       "Bash(git push:*)",
       "WebFetch(domain:api.fragella.com)",
-      "Bash(npx drizzle-kit generate)"
+      "Bash(npx drizzle-kit generate)",
+      "Bash(cat:*)",
+      "Bash(npx tsx:*)",
+      "Bash(python download-kaggle-dataset.py:*)",
+      "Bash(python:*)",
+      "Bash(copy \"C:\\Users\\hzuki\\Downloads\\archive\\fra_cleaned.csv\" \"C:\\Users\\hzuki\\OneDrive\\Bureau\\Applications\\Senada\\workers\\data\\fra_cleaned.csv\")",
+      "Bash(scriptsimport-all-batches.bat)",
+      "Bash(powershell -ExecutionPolicy Bypass -File scripts/import-all.ps1)",
+      "Bash(powershell -ExecutionPolicy Bypass -File scripts/import-all-production.ps1)",
+      "Bash(npm run deploy)"
     ],
     "deny": [],
     "ask": []

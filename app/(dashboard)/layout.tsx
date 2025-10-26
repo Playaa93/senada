@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Navigation } from "@/components/features/navigation";
 import { Header } from "@/components/features/header";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: 'Tableau de bord',
@@ -34,6 +35,7 @@ export default function DashboardLayout({
         <Header />
         <main className="flex-1">{children}</main>
       </div>
+      <Toaster richColors position="top-right" />
     </div>
   );
 }

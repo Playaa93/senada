@@ -4,6 +4,8 @@ import * as React from "react";
 import Link from "next/link";
 import type { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal, Plus, ArrowUpDown } from "lucide-react";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -33,6 +35,31 @@ interface Product {
   minStock: number;
   price: number;
 }
+
+// Fonction de suppression
+const deleteProduct = async (id: number, onSuccess: () => void) => {
+  if (!confirm("Êtes-vous sûr de vouloir supprimer ce produit ?")) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/products/${id}`, {
+      method: "DELETE",
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.error || "Erreur lors de la suppression");
+    }
+
+    toast.success("Produit supprimé avec succès");
+    onSuccess(); // Recharger les produits
+  } catch (error: any) {
+    console.error("Erreur:", error);
+    toast.error(error.message || "Impossible de supprimer le produit");
+  }
+};
 
 const columns: ColumnDef<Product>[] = [
   {
@@ -154,40 +181,85 @@ const columns: ColumnDef<Product>[] = [
 ];
 
 export default function ProductsPage() {
+  const router = useRouter();
   const [selectedCategory, setSelectedCategory] = React.useState<string>("all");
   const [products, setProducts] = React.useState<Product[]>([]);
   const [loading, setLoading] = React.useState(true);
 
   // Récupérer les produits depuis l'API
-  React.useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch("/api/products");
-        const result = await response.json();
+  const fetchProducts = React.useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await fetch("/api/products");
+      const result = await response.json();
 
-        if (result.success && result.data?.data) {
-          // Transformer les données pour correspondre à l'interface Product
-          const transformedProducts = result.data.data.map((p: any) => ({
-            id: p.id,
-            sku: p.sku,
-            name: p.name,
-            category: p.category,
-            stock: p.currentStock,
-            minStock: p.minStock,
-            price: p.sellPrice,
-          }));
-          setProducts(transformedProducts);
-        }
-      } catch (error) {
-        console.error("Erreur lors du chargement des produits:", error);
-      } finally {
-        setLoading(false);
+      if (result.success && result.data?.data) {
+        // Transformer les données pour correspondre à l'interface Product
+        const transformedProducts = result.data.data.map((p: any) => ({
+          id: p.id,
+          sku: p.sku,
+          name: p.name,
+          category: p.category,
+          stock: p.currentStock,
+          minStock: p.minStock,
+          price: p.sellPrice,
+        }));
+        setProducts(transformedProducts);
       }
-    };
-
-    fetchProducts();
+    } catch (error) {
+      console.error("Erreur lors du chargement des produits:", error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  React.useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+
+  // Définir les colonnes avec accès aux fonctions du composant
+  const columnsWithActions: ColumnDef<Product>[] = React.useMemo(
+    () => [
+      ...columns.filter((col) => col.id !== "actions"),
+      {
+        id: "actions",
+        cell: ({ row }) => {
+          const product = row.original;
+
+          return (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <span className="sr-only">Ouvrir le menu</span>
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuItem asChild>
+                  <Link href={`/products/${product.id}`}>Voir les détails</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href={`/products/${product.id}/edit`}>Modifier le produit</Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>Enregistrer entrée</DropdownMenuItem>
+                <DropdownMenuItem>Enregistrer sortie</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-destructive"
+                  onClick={() => deleteProduct(product.id, fetchProducts)}
+                >
+                  Supprimer le produit
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          );
+        },
+      },
+    ],
+    [fetchProducts]
+  );
 
   const filteredProducts =
     selectedCategory === "all"
@@ -221,7 +293,7 @@ export default function ProductsPage() {
       </div>
 
       <DataTable
-        columns={columns}
+        columns={columnsWithActions}
         data={filteredProducts}
         searchKey="name"
         searchPlaceholder="Rechercher par nom ou SKU..."
