@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -154,9 +155,115 @@ const recentOrders = [
 export default function CustomersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [segmentFilter, setSegmentFilter] = useState("all");
+  const [customersData, setCustomersData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Form state
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [city, setCity] = useState("");
+  const [notes, setNotes] = useState("");
+
+  // Load customers from API
+  useEffect(() => {
+    const fetchCustomers = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/customers');
+        if (!response.ok) {
+          throw new Error('Failed to fetch customers');
+        }
+        const result = await response.json();
+        // API returns { success: true, data: [...] }
+        setCustomersData(result.data || []);
+      } catch (error) {
+        console.error('Error fetching customers:', error);
+        toast.error('Erreur lors du chargement des clients');
+        setCustomersData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCustomers();
+  }, []);
+
+  // Reset form fields
+  const resetForm = () => {
+    setFirstName("");
+    setLastName("");
+    setEmail("");
+    setPhone("");
+    setCity("");
+    setNotes("");
+  };
+
+  // Create customer handler
+  const handleCreateCustomer = async () => {
+    // Validation
+    if (!firstName.trim() || !lastName.trim() || !email.trim()) {
+      toast.error('Prénom, nom et email sont requis');
+      return;
+    }
+
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast.error('Format d\'email invalide');
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      const response = await fetch('/api/customers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          email,
+          phone: phone || undefined,
+          city: city || undefined,
+          notes: notes || undefined,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to create customer');
+      }
+
+      const result = await response.json();
+
+      // Add new customer to the list - API returns { success: true, data: {...} }
+      if (result.success && result.data) {
+        setCustomersData(prev => [...prev, result.data]);
+      }
+
+      // Success feedback
+      toast.success('Client créé avec succès');
+
+      // Close dialog and reset form
+      setDialogOpen(false);
+      resetForm();
+
+    } catch (error: any) {
+      console.error('Error creating customer:', error);
+      toast.error(error.message || 'Erreur lors de la création du client');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const filteredCustomers = customersData.filter((customer) => {
-    const matchesSearch = customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const fullName = `${customer.firstName || ''} ${customer.lastName || ''}`.toLowerCase();
+    const matchesSearch = fullName.includes(searchTerm.toLowerCase()) ||
                          customer.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesSegment = segmentFilter === "all" || customer.segment === segmentFilter;
     return matchesSearch && matchesSegment;
@@ -164,11 +271,13 @@ export default function CustomersPage() {
 
   const stats = {
     totalCustomers: customersData.length,
-    totalRevenue: customersData.reduce((sum, c) => sum + c.totalSpent, 0),
-    averageOrder: customersData.reduce((sum, c) => sum + c.totalSpent, 0) /
-                  customersData.reduce((sum, c) => sum + c.orders, 0),
+    totalRevenue: customersData.reduce((sum, c) => sum + (c.totalSpent || 0), 0),
+    averageOrder: customersData.reduce((sum, c) => sum + (c.ordersCount || 0), 0) > 0
+      ? customersData.reduce((sum, c) => sum + (c.totalSpent || 0), 0) /
+        customersData.reduce((sum, c) => sum + (c.ordersCount || 0), 0)
+      : 0,
     activeCustomers: customersData.filter(c =>
-      new Date(c.lastOrder) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+      c.lastOrder && new Date(c.lastOrder) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
     ).length,
   };
 
@@ -194,7 +303,7 @@ export default function CustomersPage() {
             Gérez vos relations clients et suivez leurs achats
           </p>
         </div>
-        <Dialog>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <UserPlus className="mr-2 h-4 w-4" />
@@ -212,33 +321,76 @@ export default function CustomersPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">Prénom</Label>
-                  <Input id="firstName" placeholder="Marie" />
+                  <Input
+                    id="firstName"
+                    placeholder="Marie"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lastName">Nom</Label>
-                  <Input id="lastName" placeholder="Dubois" />
+                  <Input
+                    id="lastName"
+                    placeholder="Dubois"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                  />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="marie.dubois@email.fr" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="marie.dubois@email.fr"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="phone">Téléphone</Label>
-                <Input id="phone" type="tel" placeholder="+33 6 12 34 56 78" />
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="+33 6 12 34 56 78"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="city">Ville</Label>
-                <Input id="city" placeholder="Paris" />
+                <Input
+                  id="city"
+                  placeholder="Paris"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="notes">Notes</Label>
-                <Textarea id="notes" placeholder="Préférences, remarques..." />
+                <Textarea
+                  id="notes"
+                  placeholder="Préférences, remarques..."
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                />
               </div>
             </div>
             <div className="flex justify-end gap-2">
-              <Button variant="outline">Annuler</Button>
-              <Button>Créer le client</Button>
+              <Button
+                variant="outline"
+                onClick={() => setDialogOpen(false)}
+                disabled={submitting}
+              >
+                Annuler
+              </Button>
+              <Button
+                onClick={handleCreateCustomer}
+                disabled={submitting}
+              >
+                {submitting ? "Création..." : "Créer le client"}
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -355,26 +507,29 @@ export default function CustomersPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredCustomers.map((customer) => (
+                  {filteredCustomers.map((customer) => {
+                    const fullName = `${customer.firstName || ''} ${customer.lastName || ''}`.trim();
+                    const initials = `${customer.firstName?.[0] || ''}${customer.lastName?.[0] || ''}`.toUpperCase();
+                    return (
                     <TableRow key={customer.id} className="cursor-pointer hover:bg-muted/50">
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary font-semibold">
-                            {customer.name.split(' ').map(n => n[0]).join('')}
+                            {initials}
                           </div>
                           <div>
-                            <div className="font-medium">{customer.name}</div>
+                            <div className="font-medium">{fullName}</div>
                             <div className="text-sm text-muted-foreground flex items-center gap-1">
                               <MapPin className="h-3 w-3" />
-                              {customer.city}
+                              {customer.city || 'N/A'}
                             </div>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge className={getSegmentColor(customer.segment)}>
+                        <Badge className={getSegmentColor(customer.segment || 'Occasionnel')}>
                           {customer.segment === "VIP" && <Star className="mr-1 h-3 w-3" />}
-                          {customer.segment}
+                          {customer.segment || 'Occasionnel'}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -383,19 +538,25 @@ export default function CustomersPage() {
                             <Mail className="h-3 w-3" />
                             {customer.email}
                           </div>
-                          <div className="flex items-center gap-1 text-muted-foreground">
-                            <Phone className="h-3 w-3" />
-                            {customer.phone}
-                          </div>
+                          {customer.phone && (
+                            <div className="flex items-center gap-1 text-muted-foreground">
+                              <Phone className="h-3 w-3" />
+                              {customer.phone}
+                            </div>
+                          )}
                         </div>
                       </TableCell>
-                      <TableCell>{customer.orders}</TableCell>
-                      <TableCell className="font-medium">{customer.totalSpent.toLocaleString()} €</TableCell>
+                      <TableCell>{customer.ordersCount || 0}</TableCell>
+                      <TableCell className="font-medium">{(customer.totalSpent || 0).toLocaleString()} €</TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-1 text-sm">
-                          <Calendar className="h-3 w-3 text-muted-foreground" />
-                          {new Date(customer.lastOrder).toLocaleDateString('fr-FR')}
-                        </div>
+                        {customer.lastOrder ? (
+                          <div className="flex items-center gap-1 text-sm">
+                            <Calendar className="h-3 w-3 text-muted-foreground" />
+                            {new Date(customer.lastOrder).toLocaleDateString('fr-FR')}
+                          </div>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">Aucun achat</span>
+                        )}
                       </TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
@@ -420,7 +581,8 @@ export default function CustomersPage() {
                         </DropdownMenu>
                       </TableCell>
                     </TableRow>
-                  ))}
+                    );
+                  })}
                 </TableBody>
               </Table>
             </CardContent>
@@ -442,9 +604,11 @@ export default function CustomersPage() {
                   {customersData.filter(c => c.segment === "VIP").length}
                 </div>
                 <p className="text-sm text-muted-foreground mt-2">
-                  CA moyen: {(customersData.filter(c => c.segment === "VIP")
-                    .reduce((sum, c) => sum + c.totalSpent, 0) /
-                    customersData.filter(c => c.segment === "VIP").length).toFixed(0)} €
+                  CA moyen: {customersData.filter(c => c.segment === "VIP").length > 0
+                    ? (customersData.filter(c => c.segment === "VIP")
+                        .reduce((sum, c) => sum + (c.totalSpent || 0), 0) /
+                        customersData.filter(c => c.segment === "VIP").length).toFixed(0)
+                    : '0'} €
                 </p>
                 <div className="mt-4">
                   <div className="text-xs font-medium mb-2">Contribution au CA</div>
@@ -452,14 +616,18 @@ export default function CustomersPage() {
                     <div
                       className="h-2 rounded-full bg-purple-500"
                       style={{
-                        width: `${(customersData.filter(c => c.segment === "VIP")
-                          .reduce((sum, c) => sum + c.totalSpent, 0) / stats.totalRevenue * 100)}%`
+                        width: `${stats.totalRevenue > 0
+                          ? (customersData.filter(c => c.segment === "VIP")
+                              .reduce((sum, c) => sum + (c.totalSpent || 0), 0) / stats.totalRevenue * 100)
+                          : 0}%`
                       }}
                     />
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {((customersData.filter(c => c.segment === "VIP")
-                      .reduce((sum, c) => sum + c.totalSpent, 0) / stats.totalRevenue) * 100).toFixed(1)}%
+                    {stats.totalRevenue > 0
+                      ? ((customersData.filter(c => c.segment === "VIP")
+                          .reduce((sum, c) => sum + (c.totalSpent || 0), 0) / stats.totalRevenue) * 100).toFixed(1)
+                      : '0.0'}%
                   </p>
                 </div>
               </CardContent>
@@ -478,9 +646,11 @@ export default function CustomersPage() {
                   {customersData.filter(c => c.segment === "Régulier").length}
                 </div>
                 <p className="text-sm text-muted-foreground mt-2">
-                  CA moyen: {(customersData.filter(c => c.segment === "Régulier")
-                    .reduce((sum, c) => sum + c.totalSpent, 0) /
-                    customersData.filter(c => c.segment === "Régulier").length).toFixed(0)} €
+                  CA moyen: {customersData.filter(c => c.segment === "Régulier").length > 0
+                    ? (customersData.filter(c => c.segment === "Régulier")
+                        .reduce((sum, c) => sum + (c.totalSpent || 0), 0) /
+                        customersData.filter(c => c.segment === "Régulier").length).toFixed(0)
+                    : '0'} €
                 </p>
                 <div className="mt-4">
                   <div className="text-xs font-medium mb-2">Contribution au CA</div>
@@ -488,14 +658,18 @@ export default function CustomersPage() {
                     <div
                       className="h-2 rounded-full bg-blue-500"
                       style={{
-                        width: `${(customersData.filter(c => c.segment === "Régulier")
-                          .reduce((sum, c) => sum + c.totalSpent, 0) / stats.totalRevenue * 100)}%`
+                        width: `${stats.totalRevenue > 0
+                          ? (customersData.filter(c => c.segment === "Régulier")
+                              .reduce((sum, c) => sum + (c.totalSpent || 0), 0) / stats.totalRevenue * 100)
+                          : 0}%`
                       }}
                     />
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {((customersData.filter(c => c.segment === "Régulier")
-                      .reduce((sum, c) => sum + c.totalSpent, 0) / stats.totalRevenue) * 100).toFixed(1)}%
+                    {stats.totalRevenue > 0
+                      ? ((customersData.filter(c => c.segment === "Régulier")
+                          .reduce((sum, c) => sum + (c.totalSpent || 0), 0) / stats.totalRevenue) * 100).toFixed(1)
+                      : '0.0'}%
                   </p>
                 </div>
               </CardContent>
@@ -514,9 +688,11 @@ export default function CustomersPage() {
                   {customersData.filter(c => c.segment === "Occasionnel").length}
                 </div>
                 <p className="text-sm text-muted-foreground mt-2">
-                  CA moyen: {(customersData.filter(c => c.segment === "Occasionnel")
-                    .reduce((sum, c) => sum + c.totalSpent, 0) /
-                    customersData.filter(c => c.segment === "Occasionnel").length).toFixed(0)} €
+                  CA moyen: {customersData.filter(c => c.segment === "Occasionnel").length > 0
+                    ? (customersData.filter(c => c.segment === "Occasionnel")
+                        .reduce((sum, c) => sum + (c.totalSpent || 0), 0) /
+                        customersData.filter(c => c.segment === "Occasionnel").length).toFixed(0)
+                    : '0'} €
                 </p>
                 <div className="mt-4">
                   <div className="text-xs font-medium mb-2">Contribution au CA</div>
@@ -524,14 +700,18 @@ export default function CustomersPage() {
                     <div
                       className="h-2 rounded-full bg-gray-500"
                       style={{
-                        width: `${(customersData.filter(c => c.segment === "Occasionnel")
-                          .reduce((sum, c) => sum + c.totalSpent, 0) / stats.totalRevenue * 100)}%`
+                        width: `${stats.totalRevenue > 0
+                          ? (customersData.filter(c => c.segment === "Occasionnel")
+                              .reduce((sum, c) => sum + (c.totalSpent || 0), 0) / stats.totalRevenue * 100)
+                          : 0}%`
                       }}
                     />
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {((customersData.filter(c => c.segment === "Occasionnel")
-                      .reduce((sum, c) => sum + c.totalSpent, 0) / stats.totalRevenue) * 100).toFixed(1)}%
+                    {stats.totalRevenue > 0
+                      ? ((customersData.filter(c => c.segment === "Occasionnel")
+                          .reduce((sum, c) => sum + (c.totalSpent || 0), 0) / stats.totalRevenue) * 100).toFixed(1)
+                      : '0.0'}%
                   </p>
                 </div>
               </CardContent>

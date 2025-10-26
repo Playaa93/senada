@@ -235,7 +235,7 @@ export function ProductDetailClient() {
                     )}
                     <div>
                       <p className="font-medium">
-                        {movement.type === "in" ? "Entrée" : "Sortie"} de{" "}
+                        {movement.type === "IN" ? "Entrée" : "Sortie"} de{" "}
                         {movement.quantity} unité(s)
                       </p>
                       {movement.reason && (

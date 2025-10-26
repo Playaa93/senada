@@ -116,6 +116,31 @@ export const fragrances = sqliteTable('fragrances', {
     .default(sql`(unixepoch())`),
 });
 
+/**
+ * Customers table - Client relationship management
+ */
+export const customers = sqliteTable('customers', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  firstName: text('first_name').notNull(),
+  lastName: text('last_name').notNull(),
+  email: text('email').notNull().unique(),
+  phone: text('phone'),
+  city: text('city'),
+  notes: text('notes'),
+  segment: text('segment', { enum: ['VIP', 'Régulier', 'Occasionnel'] })
+    .notNull()
+    .default('Occasionnel'),
+  totalSpent: real('total_spent').notNull().default(0),
+  ordersCount: integer('orders_count').notNull().default(0),
+  lastOrderDate: integer('last_order_date', { mode: 'timestamp' }),
+  createdAt: integer('created_at', { mode: 'timestamp' })
+    .notNull()
+    .default(sql`(unixepoch())`),
+  updatedAt: integer('updated_at', { mode: 'timestamp' })
+    .notNull()
+    .default(sql`(unixepoch())`),
+});
+
 // Type exports for TypeScript
 export type Product = typeof products.$inferSelect;
 export type NewProduct = typeof products.$inferInsert;
@@ -127,3 +152,5 @@ export type RestockPrediction = typeof restockPredictions.$inferSelect;
 export type NewRestockPrediction = typeof restockPredictions.$inferInsert;
 export type Fragrance = typeof fragrances.$inferSelect;
 export type NewFragrance = typeof fragrances.$inferInsert;
+export type Customer = typeof customers.$inferSelect;
+export type NewCustomer = typeof customers.$inferInsert;
