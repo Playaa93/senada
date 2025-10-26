@@ -25,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { StockMovementDialog } from "@/components/features/stock-movement-dialog";
 
 interface Product {
   id: number;
@@ -185,6 +186,9 @@ export default function ProductsPage() {
   const [selectedCategory, setSelectedCategory] = React.useState<string>("all");
   const [products, setProducts] = React.useState<Product[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [selectedProduct, setSelectedProduct] = React.useState<Product | null>(null);
+  const [stockInDialogOpen, setStockInDialogOpen] = React.useState(false);
+  const [stockOutDialogOpen, setStockOutDialogOpen] = React.useState(false);
 
   // Récupérer les produits depuis l'API
   const fetchProducts = React.useCallback(async () => {
@@ -236,15 +240,29 @@ export default function ProductsPage() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem asChild>
-                  <Link href={`/products/${product.id}`}>Voir les détails</Link>
+                <DropdownMenuItem onClick={() => router.push(`/products/${product.id}`)}>
+                  Voir les détails
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href={`/products/${product.id}/edit`}>Modifier le produit</Link>
+                <DropdownMenuItem onClick={() => router.push(`/products/${product.id}/edit`)}>
+                  Modifier le produit
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Enregistrer entrée</DropdownMenuItem>
-                <DropdownMenuItem>Enregistrer sortie</DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setSelectedProduct(product);
+                    setStockInDialogOpen(true);
+                  }}
+                >
+                  Enregistrer entrée
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setSelectedProduct(product);
+                    setStockOutDialogOpen(true);
+                  }}
+                >
+                  Enregistrer sortie
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   className="text-destructive"
@@ -258,7 +276,7 @@ export default function ProductsPage() {
         },
       },
     ],
-    [fetchProducts]
+    [fetchProducts, router, setSelectedProduct, setStockInDialogOpen, setStockOutDialogOpen]
   );
 
   const filteredProducts =
@@ -298,6 +316,30 @@ export default function ProductsPage() {
         searchKey="name"
         searchPlaceholder="Rechercher par nom ou SKU..."
       />
+
+      {/* Stock Movement Dialogs */}
+      {selectedProduct && (
+        <>
+          <StockMovementDialog
+            productId={selectedProduct.id}
+            productName={selectedProduct.name}
+            currentStock={selectedProduct.stock}
+            type="IN"
+            open={stockInDialogOpen}
+            onOpenChange={setStockInDialogOpen}
+            onSuccess={fetchProducts}
+          />
+          <StockMovementDialog
+            productId={selectedProduct.id}
+            productName={selectedProduct.name}
+            currentStock={selectedProduct.stock}
+            type="OUT"
+            open={stockOutDialogOpen}
+            onOpenChange={setStockOutDialogOpen}
+            onSuccess={fetchProducts}
+          />
+        </>
+      )}
     </div>
   );
 }

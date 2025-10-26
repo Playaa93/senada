@@ -209,4 +209,79 @@ app.get('/meta/categories', async (c) => {
   }
 });
 
+/**
+ * POST /api/products/:id/movements - Create stock movement (IN or OUT)
+ */
+app.post('/:id/movements', async (c) => {
+  try {
+    const db = c.get('db');
+    const id = parseInt(c.req.param('id'));
+    const body = await c.req.json();
+
+    if (isNaN(id)) {
+      return c.json({ error: 'Invalid product ID' }, 400);
+    }
+
+    // Validate request body
+    if (!body.type || !['IN', 'OUT'].includes(body.type)) {
+      return c.json({ error: 'Movement type must be IN or OUT' }, 400);
+    }
+
+    if (!body.quantity || body.quantity <= 0) {
+      return c.json({ error: 'Quantity must be a positive number' }, 400);
+    }
+
+    // Check if product exists
+    const [product] = await db.select().from(products).where(eq(products.id, id));
+    if (!product) {
+      return c.json({ error: 'Product not found' }, 404);
+    }
+
+    // Calculate new stock
+    const previousStock = product.currentStock;
+    const newStock =
+      body.type === 'IN'
+        ? previousStock + body.quantity
+        : previousStock - body.quantity;
+
+    if (newStock < 0) {
+      return c.json({ error: 'Insufficient stock for this operation' }, 400);
+    }
+
+    // Create movement record with lowercase type matching schema
+    const [movement] = await db
+      .insert(stockMovements)
+      .values({
+        productId: id,
+        type: body.type.toLowerCase() as 'in' | 'out', // Convert to lowercase for schema
+        quantity: body.quantity,
+        previousStock: previousStock,
+        newStock: newStock,
+        reason: body.reason || null,
+      })
+      .returning();
+
+    // Update product stock
+    const [updatedProduct] = await db
+      .update(products)
+      .set({
+        currentStock: newStock,
+        updatedAt: sql`(unixepoch())`,
+      })
+      .where(eq(products.id, id))
+      .returning();
+
+    return c.json({
+      data: {
+        movement,
+        product: updatedProduct,
+      },
+      message: `Stock ${body.type === 'IN' ? 'entry' : 'exit'} recorded successfully`,
+    });
+  } catch (error) {
+    console.error('Error creating stock movement:', error);
+    return c.json({ error: 'Failed to record stock movement' }, 500);
+  }
+});
+
 export default app;
