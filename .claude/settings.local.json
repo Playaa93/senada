@@ -30,7 +30,9 @@
       "Bash(git commit:*)",
       "Bash(git remote add:*)",
       "Bash(git branch:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "WebFetch(domain:api.fragella.com)",
+      "Bash(npx drizzle-kit generate)"
     ],
     "deny": [],
     "ask": []

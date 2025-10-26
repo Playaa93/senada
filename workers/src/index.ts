@@ -7,6 +7,7 @@ import productsRouter from './routes/products';
 import stockRouter from './routes/stock';
 import suppliersRouter from './routes/suppliers';
 import analyticsRouter from './routes/analytics';
+import fragrancesRouter from './routes/fragrances';
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -47,6 +48,7 @@ app.route('/api/products', productsRouter);
 app.route('/api/stock', stockRouter);
 app.route('/api/suppliers', suppliersRouter);
 app.route('/api/analytics', analyticsRouter);
+app.route('/api/fragrances', fragrancesRouter);
 
 // 404 handler
 app.notFound((c) => {

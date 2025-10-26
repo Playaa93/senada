@@ -87,6 +87,35 @@ export const restockPredictions = sqliteTable('restock_predictions', {
     .default(sql`(unixepoch())`),
 });
 
+/**
+ * Fragrances table - Reference database from Fragrantica dataset
+ */
+export const fragrances = sqliteTable('fragrances', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  fragrancaId: text('fragrantica_id').unique(), // External ID from Fragrantica
+  name: text('name').notNull(),
+  brand: text('brand').notNull(),
+  gender: text('gender'), // 'for women', 'for men', 'unisex'
+  year: integer('year'), // Release year
+  perfumer: text('perfumer'),
+  topNotes: text('top_notes'), // Comma-separated or JSON array
+  middleNotes: text('middle_notes'),
+  baseNotes: text('base_notes'),
+  mainAccords: text('main_accords'), // JSON array of accords
+  description: text('description'),
+  rating: real('rating'), // Average rating
+  votes: integer('votes'), // Number of votes
+  imageUrl: text('image_url'),
+  sillage: text('sillage'), // Projection strength
+  longevity: text('longevity'), // How long it lasts
+  createdAt: integer('created_at', { mode: 'timestamp' })
+    .notNull()
+    .default(sql`(unixepoch())`),
+  updatedAt: integer('updated_at', { mode: 'timestamp' })
+    .notNull()
+    .default(sql`(unixepoch())`),
+});
+
 // Type exports for TypeScript
 export type Product = typeof products.$inferSelect;
 export type NewProduct = typeof products.$inferInsert;
@@ -96,3 +125,5 @@ export type Supplier = typeof suppliers.$inferSelect;
 export type NewSupplier = typeof suppliers.$inferInsert;
 export type RestockPrediction = typeof restockPredictions.$inferSelect;
 export type NewRestockPrediction = typeof restockPredictions.$inferInsert;
+export type Fragrance = typeof fragrances.$inferSelect;
+export type NewFragrance = typeof fragrances.$inferInsert;
