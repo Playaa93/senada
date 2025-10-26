@@ -1,0 +1,26 @@
+{
+  "name": "senada-workers",
+  "version": "1.0.0",
+  "description": "Cloudflare Workers backend for Senada perfume inventory management",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "wrangler d1 migrations apply senada-db --local",
+    "db:migrate:prod": "wrangler d1 migrations apply senada-db",
+    "db:studio": "drizzle-kit studio",
+    "db:seed": "wrangler d1 execute senada-db --local --command=\"INSERT INTO suppliers (name, contact_name, email, phone, address, payment_terms, lead_time_days, notes, is_active) VALUES ('Parfums de Luxe France', 'Marie Dubois', 'marie@parfumsluxe.fr', '+33 1 42 86 52 12', '15 Rue de la Paix, 75002 Paris, France', 'Net 30', 7, 'Fournisseur premium', 1), ('Fragrances International', 'John Smith', 'j.smith@fragrances-intl.com', '+44 20 7946 0958', '123 Oxford Street, London W1D 2HG, UK', 'Net 45', 14, 'Large distributeur', 1), ('Essence & Senteurs', 'Sophie Martin', 'sophie@essence-senteurs.com', '+33 4 91 13 89 00', '45 Bd Canebière, 13001 Marseille, France', 'Net 30', 5, 'Livraison rapide', 1)\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "hono": "^4.6.14",
+    "drizzle-orm": "^0.36.4"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241127.0",
+    "drizzle-kit": "^0.29.1",
+    "typescript": "^5.7.2",
+    "wrangler": "^3.94.0"
+  }
+}

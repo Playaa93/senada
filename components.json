@@ -1,0 +1,21 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "new-york",
+  "rsc": true,
+  "tsx": true,
+  "tailwind": {
+    "config": "tailwind.config.ts",
+    "css": "app/globals.css",
+    "baseColor": "zinc",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "aliases": {
+    "components": "C:/Users/hzuki/OneDrive/Bureau/Applications/Senada/components",
+    "utils": "C:/Users/hzuki/OneDrive/Bureau/Applications/Senada/lib/utils",
+    "ui": "C:/Users/hzuki/OneDrive/Bureau/Applications/Senada/components/ui",
+    "lib": "C:/Users/hzuki/OneDrive/Bureau/Applications/Senada/lib",
+    "hooks": "C:/Users/hzuki/OneDrive/Bureau/Applications/Senada/hooks"
+  },
+  "iconLibrary": "lucide"
+}

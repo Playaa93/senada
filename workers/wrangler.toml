@@ -1,0 +1,20 @@
+name = "senada-workers"
+main = "src/index.ts"
+compatibility_date = "2024-10-26"
+compatibility_flags = ["nodejs_compat"]
+
+[observability]
+enabled = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "senada-db"
+database_id = "bdc5d0cc-88d8-4928-9ed8-12a2b53b3bd7"
+migrations_dir = "drizzle"
+
+# Uncomment for production
+# [env.production]
+# [[env.production.d1_databases]]
+# binding = "DB"
+# database_name = "senada-db-production"
+# database_id = "replace-with-your-production-d1-database-id"

@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(npm install)",
+      "Bash(npx wrangler:*)",
+      "Bash(npm run db:generate:*)",
+      "Bash(npm run db:migrate:*)",
+      "Bash(dir:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm install:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill /F /PID 35100)",
+      "Bash(taskkill:*)",
+      "Bash(if exist .next rmdir /s /q .next)",
+      "Bash(npx kill-port:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(curl:*)",
+      "Bash(start https://dash.cloudflare.com/87e750fd738cd5034d8b2e386484d264)",
+      "Bash(npm run build:*)",
+      "Bash(npx fix-verbatim-module-syntax:*)",
+      "Bash(Select-String -Pattern \"error|Failed|✓\" -Context 0,2)",
+      "Bash(wrangler:*)",
+      "Bash(vercel:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

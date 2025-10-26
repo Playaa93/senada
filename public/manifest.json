@@ -1,0 +1,146 @@
+{
+  "name": "Senada - Gestion de Stock de Parfums",
+  "short_name": "Senada",
+  "description": "Système moderne de gestion d'inventaire de parfums avec support hors ligne",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#6366F1",
+  "orientation": "portrait-primary",
+  "categories": ["business", "productivity", "inventory"],
+  "icons": [
+    {
+      "src": "/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/desktop-1.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Vue du tableau de bord"
+    },
+    {
+      "src": "/screenshots/mobile-1.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Vue mobile de l'inventaire"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Ajouter un produit",
+      "short_name": "Ajouter",
+      "description": "Ajouter rapidement un nouveau produit",
+      "url": "/products/new",
+      "icons": [
+        {
+          "src": "/icons/shortcut-add.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Mouvement de Stock",
+      "short_name": "Mouvement",
+      "description": "Enregistrer un mouvement de stock",
+      "url": "/stock/new",
+      "icons": [
+        {
+          "src": "/icons/shortcut-stock.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Tableau de bord",
+      "short_name": "Tableau",
+      "description": "Voir le tableau de bord",
+      "url": "/dashboard",
+      "icons": [
+        {
+          "src": "/icons/shortcut-dashboard.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "share_target": {
+    "action": "/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url",
+      "files": [
+        {
+          "name": "images",
+          "accept": ["image/*"]
+        }
+      ]
+    }
+  },
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "scope": "/",
+  "lang": "fr",
+  "dir": "ltr",
+  "iarc_rating_id": "",
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "protocol_handlers": [
+    {
+      "protocol": "web+senada",
+      "url": "/handle?url=%s"
+    }
+  ]
+}

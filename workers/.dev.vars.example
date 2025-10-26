@@ -1,0 +1,8 @@
+# Cloudflare account credentials for Drizzle Kit
+# Get these from Cloudflare Dashboard
+CLOUDFLARE_ACCOUNT_ID=your-account-id-here
+CLOUDFLARE_D1_DATABASE_ID=your-d1-database-id-here
+CLOUDFLARE_API_TOKEN=your-api-token-here
+
+# Optional: CORS allowed origins (comma-separated)
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173
