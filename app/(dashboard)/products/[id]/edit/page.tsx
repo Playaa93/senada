@@ -14,7 +14,7 @@ import Link from "next/link";
 export default function EditProductPage() {
   const router = useRouter();
   const params = useParams();
-  const productId = params['id'] as string;
+  const productId = params.id as string;
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);

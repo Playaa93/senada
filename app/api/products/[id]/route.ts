@@ -7,10 +7,11 @@ const WORKER_URL = process.env['WORKER_URL'] || 'http://localhost:8787';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const workerUrl = new URL(`/api/products/${params.id}`, WORKER_URL);
+    const { id } = await params;
+    const workerUrl = new URL(`/api/products/${id}`, WORKER_URL);
     const response = await fetch(workerUrl.toString());
 
     if (!response.ok) {
@@ -37,12 +38,13 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
 
-    const workerUrl = new URL(`/api/products/${params.id}`, WORKER_URL);
+    const workerUrl = new URL(`/api/products/${id}`, WORKER_URL);
     const response = await fetch(workerUrl.toString(), {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -73,10 +75,11 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const workerUrl = new URL(`/api/products/${params.id}`, WORKER_URL);
+    const { id } = await params;
+    const workerUrl = new URL(`/api/products/${id}`, WORKER_URL);
     const response = await fetch(workerUrl.toString(), {
       method: 'DELETE',
     });
