@@ -4,7 +4,7 @@
  */
 
 import { drizzle } from 'drizzle-orm/d1';
-import { like, or } from 'drizzle-orm';
+import { like, or, and } from 'drizzle-orm';
 import { fragrances, type Fragrance } from '../db/schema';
 
 interface FragellaAPIResponse {
@@ -44,16 +44,19 @@ export class FragranceSearchService {
     // Create search patterns for each word
     const searchPatterns = words.map(word => `%${word}%`);
 
-    // Build conditions: each word can match in name OR brand
-    const conditions = searchPatterns.flatMap(pattern => [
-      like(fragrances.name, pattern),
-      like(fragrances.brand, pattern)
-    ]);
+    // Build conditions: ALL words must be present (AND), but each word can match in name OR brand (OR)
+    // Example: "prada luna rossa" -> (prada in name OR brand) AND (luna in name OR brand) AND (rossa in name OR brand)
+    const conditions = searchPatterns.map(pattern =>
+      or(
+        like(fragrances.name, pattern),
+        like(fragrances.brand, pattern)
+      )
+    );
 
     const results = await drizzleDb
       .select()
       .from(fragrances)
-      .where(or(...conditions))
+      .where(and(...conditions))
       .limit(limit)
       .all();
 
