@@ -18,7 +18,7 @@ export function FragranceSearch({ onSelect }: FragranceSearchProps) {
   const [fragrances, setFragrances] = React.useState<Fragrance[]>([]);
   const [loading, setLoading] = React.useState(false);
 
-  const searchTimeoutRef = React.useRef<NodeJS.Timeout>();
+  const searchTimeoutRef = React.useRef<NodeJS.Timeout | undefined>(undefined);
 
   React.useEffect(() => {
     if (query.length < 2) {

@@ -24,9 +24,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-// Données de test - à remplacer par des appels API
 interface Product {
-  id: string;
+  id: number;
   sku: string;
   name: string;
   category: string;
@@ -34,9 +33,6 @@ interface Product {
   minStock: number;
   price: number;
 }
-
-// TODO: Remplacer par des appels API
-const mockProducts: Product[] = [];
 
 const columns: ColumnDef<Product>[] = [
   {
@@ -159,11 +155,44 @@ const columns: ColumnDef<Product>[] = [
 
 export default function ProductsPage() {
   const [selectedCategory, setSelectedCategory] = React.useState<string>("all");
+  const [products, setProducts] = React.useState<Product[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  // Récupérer les produits depuis l'API
+  React.useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch("/api/products");
+        const result = await response.json();
+
+        if (result.success && result.data?.data) {
+          // Transformer les données pour correspondre à l'interface Product
+          const transformedProducts = result.data.data.map((p: any) => ({
+            id: p.id,
+            sku: p.sku,
+            name: p.name,
+            category: p.category,
+            stock: p.currentStock,
+            minStock: p.minStock,
+            price: p.sellPrice,
+          }));
+          setProducts(transformedProducts);
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement des produits:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   const filteredProducts =
     selectedCategory === "all"
-      ? mockProducts
-      : mockProducts.filter((p) => p.category === selectedCategory);
+      ? products
+      : products.filter((p) => p.category === selectedCategory);
 
   return (
     <div className="flex-1 space-y-6 p-8 pt-6">

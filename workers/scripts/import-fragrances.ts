@@ -10,7 +10,11 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 import { parse } from 'csv-parse/sync';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 interface FragrancaCSVRow {
   // Adjust these fields based on actual CSV structure
@@ -126,11 +130,23 @@ ${values};
  * Main import function
  */
 async function importFragrances() {
-  const csvPath = path.join(__dirname, '../data/fra_cleaned.csv');
+  // Try transformed file first, then demo, then original
+  const transformedPath = path.join(__dirname, '../data/fra_cleaned_transformed.csv');
+  const demoPath = path.join(__dirname, '../data/demo-fragrances.csv');
+  const fullPath = path.join(__dirname, '../data/fra_cleaned.csv');
 
-  // Check if file exists
-  if (!fs.existsSync(csvPath)) {
-    console.error(`\n❌ Error: File not found at ${csvPath}`);
+  let csvPath: string;
+  if (fs.existsSync(transformedPath)) {
+    csvPath = transformedPath;
+    console.log('📊 Using transformed dataset...');
+  } else if (fs.existsSync(demoPath)) {
+    csvPath = demoPath;
+    console.log('📊 Using demo dataset...');
+  } else if (fs.existsSync(fullPath)) {
+    csvPath = fullPath;
+    console.log('📊 Using full dataset...');
+  } else {
+    console.error(`\n❌ Error: No dataset found`);
     console.log('\n📥 Please download the Fragrantica dataset:');
     console.log('   1. Go to: https://www.kaggle.com/datasets/olgagmiufana1/fragrantica-com-fragrance-dataset');
     console.log('   2. Download and extract fra_cleaned.csv');

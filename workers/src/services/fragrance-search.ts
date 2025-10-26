@@ -33,20 +33,27 @@ export class FragranceSearchService {
 
   /**
    * Search fragrances in local D1 database
+   * Supports bidirectional search: by name, brand, or combined
    */
   async searchLocal(query: string, limit = 10): Promise<Fragrance[]> {
     const drizzleDb = drizzle(this.db);
-    const searchPattern = `%${query}%`;
+
+    // Split query into words for better matching
+    const words = query.toLowerCase().trim().split(/\s+/);
+
+    // Create search patterns for each word
+    const searchPatterns = words.map(word => `%${word}%`);
+
+    // Build conditions: each word can match in name OR brand
+    const conditions = searchPatterns.flatMap(pattern => [
+      like(fragrances.name, pattern),
+      like(fragrances.brand, pattern)
+    ]);
 
     const results = await drizzleDb
       .select()
       .from(fragrances)
-      .where(
-        or(
-          like(fragrances.name, searchPattern),
-          like(fragrances.brand, searchPattern)
-        )
-      )
+      .where(or(...conditions))
       .limit(limit)
       .all();
 

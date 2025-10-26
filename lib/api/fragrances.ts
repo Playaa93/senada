@@ -40,16 +40,16 @@ export async function searchFragrances(
   query: string,
   limit = 10
 ): Promise<FragranceSearchResponse> {
-  const response = await apiClient.get('/api/fragrances/search', {
+  const response = await apiClient.get<FragranceSearchResponse>('/api/fragrances/search', {
     params: { q: query, limit },
   });
-  return response.data;
+  return response;
 }
 
 /**
  * Get fragrance details by ID
  */
 export async function getFragranceById(id: number): Promise<Fragrance> {
-  const response = await apiClient.get(`/api/fragrances/${id}`);
-  return response.data;
+  const response = await apiClient.get<Fragrance>(`/api/fragrances/${id}`);
+  return response;
 }

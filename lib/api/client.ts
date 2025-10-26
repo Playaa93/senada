@@ -21,7 +21,8 @@ class ApiClient {
   private token: string | null = null;
 
   constructor(baseURL?: string) {
-    this.baseURL = baseURL || process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:8787';
+    // Use Next.js server as proxy to Cloudflare Worker
+    this.baseURL = baseURL || process.env['NEXT_PUBLIC_API_URL'] || '';
     this.defaultHeaders = {
       'Content-Type': 'application/json',
     };
@@ -70,6 +71,21 @@ class ApiClient {
 
   // Build URL with query parameters
   private buildURL(path: string, params?: Record<string, string | number | boolean | undefined>): string {
+    // If baseURL is empty, use relative paths (for Next.js API routes)
+    if (!this.baseURL) {
+      const url = new URL(path, typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
+
+      if (params) {
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            url.searchParams.append(key, String(value));
+          }
+        });
+      }
+
+      return url.toString();
+    }
+
     const url = new URL(path, this.baseURL);
 
     if (params) {
