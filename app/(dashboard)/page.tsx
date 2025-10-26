@@ -15,55 +15,30 @@ import {
 import { DollarSign, Package, AlertTriangle, TrendingUp, Plus, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import Link from "next/link";
 
-// Données de test - à remplacer par des appels API
+// TODO: Remplacer par des appels API
 const stats = {
-  totalProducts: 248,
-  totalValue: 125340,
-  lowStockAlerts: 12,
-  revenueThisMonth: 45230,
+  totalProducts: 0,
+  totalValue: 0,
+  lowStockAlerts: 0,
+  revenueThisMonth: 0,
 };
 
-const recentMovements = [
-  {
-    id: "1",
-    product: "Chanel No. 5 EDP 100ml",
-    type: "SORTIE",
-    quantity: 5,
-    date: "2025-10-25",
-    reason: "Vente",
-  },
-  {
-    id: "2",
-    product: "Dior Sauvage EDT 60ml",
-    type: "ENTRÉE",
-    quantity: 20,
-    date: "2025-10-24",
-    reason: "Réapprovisionnement",
-  },
-  {
-    id: "3",
-    product: "Tom Ford Black Orchid 50ml",
-    type: "SORTIE",
-    quantity: 3,
-    date: "2025-10-24",
-    reason: "Vente",
-  },
-  {
-    id: "4",
-    product: "YSL La Nuit de L'Homme 100ml",
-    type: "AJUSTEMENT",
-    quantity: -2,
-    date: "2025-10-23",
-    reason: "Endommagé",
-  },
-];
+const recentMovements: Array<{
+  id: string;
+  product: string;
+  type: string;
+  quantity: number;
+  date: string;
+  reason: string;
+}> = [];
 
-const lowStockProducts = [
-  { id: "1", name: "Chanel No. 5 EDP 100ml", sku: "CHN-005-100", stock: 3, minStock: 10 },
-  { id: "2", name: "Hermès Terre d'Hermès 75ml", sku: "HER-TER-075", stock: 5, minStock: 12 },
-  { id: "3", name: "Gucci Bloom EDP 50ml", sku: "GUC-BLM-050", stock: 2, minStock: 8 },
-  { id: "4", name: "Prada L'Homme EDT 100ml", sku: "PRA-LHM-100", stock: 4, minStock: 10 },
-];
+const lowStockProducts: Array<{
+  id: string;
+  name: string;
+  sku: string;
+  stock: number;
+  minStock: number;
+}> = [];
 
 export default function DashboardPage() {
   return (
